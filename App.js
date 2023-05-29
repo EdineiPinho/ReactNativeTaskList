@@ -7,21 +7,10 @@ import { AntDesign } from '@expo/vector-icons';
 
 export default function App() {
   const image = require('./resources/task.jpg');
-  const [tarefas, setTarefas] = useState([
-    {
-      id: 1,
-      tarefa: 'Levar o carro ao mecânico para consertar a porta.',
-    },
-    {
-      id: 2,
-      tarefa: 'Fazer as marmitas para levar para o trabalho.',
-    },
-    {
-      id: 3,
-      tarefa: 'Fazer bolo de mingal',
-    },
-  ]);
+  const [tarefas, setTarefas] = useState([]);
   const [modal, setModal] = useState(false);
+  const [tarefaAtual, setTarefaAtual] = useState('');
+  const [ultimoID, setUltimoID] = useState(0);
 
   let [fontsLoaded] = useFonts({
     Inter_900Black,
@@ -37,6 +26,20 @@ export default function App() {
     setTarefas(updatedTasks);
   }
 
+  function addTarefa() {
+    if (tarefaAtual) {
+      setTarefaAtual('');
+      let tarefa = { id: ultimoID + 1, tarefa: tarefaAtual }
+      setTarefas([...tarefas, tarefa]);
+      setUltimoID(ultimoID + 1);
+      setTarefaAtual('');
+    }
+    else {
+      alert('Adicione algum texto para adicionar a tarefa.');
+      setModal(true);
+    }
+  }
+
   return (
     <View style={{ ...styles.theme, flex: 1 }}>
       <ImageBackground source={image} style={styles.image} >
@@ -46,7 +49,7 @@ export default function App() {
           </Text>
         </View>
       </ImageBackground>
-      <ScrollView>
+      <ScrollView style={styles.scrollView}>
         <Modal
           animationType='slide'
           transparent={true}
@@ -59,10 +62,15 @@ export default function App() {
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-              <TextInput style={styles.modalTextInput} autoFocus={true} placeholder='Digite a nova tarefa aqui' placeholderTextColor={'#ccc'}></TextInput>
+              <TextInput
+                onChangeText={text => setTarefaAtual(text)}
+                style={styles.modalTextInput} autoFocus={true} placeholder='Digite a nova tarefa aqui' placeholderTextColor={'#ccc'}>
+
+              </TextInput>
               <TouchableHighlight
                 style={{ ...styles.openButton, backgroundColor: '#29f' }}
                 onPress={() => {
+                  addTarefa();
                   setModal(!modal);
                 }}
               >
@@ -79,14 +87,13 @@ export default function App() {
           tarefas.map(function (val) {
             return (
               <View style={styles.vTarefaSingle}>
-                <View style={{ flex: 1, width: '80%', paddingLeft: 24 }}>
+                <View style={{ flex: 1, width: '80%' }}>
                   <Text style={{ color: '#ddd', fontSize: 16 }}>
                     {val.tarefa}
                   </Text>
                 </View>
-                <View style={{ alignItems: 'flex-end', flex: 1, paddingRight: 24 }}>
+                <View>
                   <TouchableOpacity
-                    style={styles.btnAddTarefas}
                     onPress={() => deletarTarefa(val.id)}
                   >
                     <AntDesign name="minuscircleo" size={24} color="#a22" />
@@ -96,13 +103,13 @@ export default function App() {
             )
           })
         }
-
+      </ScrollView>
+      <StatusBar style="auto" />
+      <View style={styles.vAddTarefas}>
         <TouchableOpacity onPress={() => setModal(true)}>
           <AntDesign name="pluscircleo" size={48} color="#0a5" />
         </TouchableOpacity>
-
-      </ScrollView>
-      <StatusBar style="auto" />
+      </View>
     </View>
   );
 }
@@ -110,12 +117,17 @@ export default function App() {
 const styles = StyleSheet.create({
   theme: {
     backgroundColor: '#111',
+    position: 'relative'
   },
 
   image: {
     resizeMode: 'cover',
     width: '100%',
     height: 130,
+  },
+
+  scrollView: {
+    position: 'relative',
   },
 
   coverView: {
@@ -131,19 +143,21 @@ const styles = StyleSheet.create({
   textHeader: {
     display: 'flex',
     color: '#fff',
-    fontSize: 24,
+    fontSize: 36,
     textAlign: 'center',
     padding: 4,
     fontFamily: 'Inter_900Black',
   },
 
   vTarefaSingle: {
-    marginTop: 30,
+    display: 'flex',
     width: '100%',
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
     flexDirection: 'row',
-    paddingBottom: 10,
+    padding: 12,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 
   centeredView: {
@@ -154,10 +168,10 @@ const styles = StyleSheet.create({
   },
 
   modalView: {
-    margin: 36,
+    margin: 12,
     backgroundColor: '#666',
     borderRadius: 4,
-    padding: 48,
+    padding: 24,
     alignItems: 'center',
     shadowColor: '#fff',
     shadowOffset: { width: 0, height: 2 },
@@ -171,7 +185,8 @@ const styles = StyleSheet.create({
   textStyle: {
     color: '#ddd',
     padding: 12,
-    fontSize: 16,
+    fontSize: 18,
+    paddingHorizontal: 24,
   },
 
   openButton: {
@@ -184,12 +199,17 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 18,
     width: '100%',
+    fontSize: 16,
   },
 
-  btnAddTarefas: {
+  vAddTarefas: {
     position: 'absolute',
     bottom: 24,
     right: 24,
   },
+
+  btnAddTarefas: {
+
+  }
 
 })
