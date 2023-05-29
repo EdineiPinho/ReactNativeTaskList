@@ -1,16 +1,41 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, ImageBackground, TouchableOpacity, ScrollView, Modal, TouchableHighlight, TextInput } from 'react-native';
 import AppLoading from 'expo-app-loading';
 import { useFonts, Inter_900Black } from '@expo-google-fonts/inter';
 import { AntDesign } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function App() {
+  console.disableYellowBox = true;
   const image = require('./resources/task.jpg');
   const [tarefas, setTarefas] = useState([]);
   const [modal, setModal] = useState(false);
   const [tarefaAtual, setTarefaAtual] = useState('');
   const [ultimoID, setUltimoID] = useState(0);
+
+  useEffect(() => {
+    (
+      async () => {
+        try {
+          let tarefaAtual = await AsyncStorage.getItem('tarefas');
+          const getID = await AsyncStorage.getItem('@storage_Id');
+          if (tarefaAtual === null) {
+            setTarefas([]);
+            setUltimoID(0);
+          }
+          else {
+            setTarefas(JSON.parse(tarefaAtual));
+          }
+          if (getID === null || getID === NaN) setUltimoID(0);
+          else setUltimoID(Number(getID))
+        }
+        catch (error) {
+          alert('Erro: ' + error);
+        }
+      }
+    )();
+  }, [])
 
   let [fontsLoaded] = useFonts({
     Inter_900Black,
@@ -24,14 +49,32 @@ export default function App() {
       return val.id != id;
     })
     setTarefas(updatedTasks);
+    if (tarefas.length === 0) setUltimoID(0);
+    async function init() {
+      try {
+        await AsyncStorage.setItem('tarefas', JSON.stringify(updatedTasks));
+      } catch (error) {
+        alert('Erro: ' + error);
+      }
+    }
+    init();
   }
 
   function addTarefa() {
     if (tarefaAtual) {
       setTarefaAtual('');
       let tarefa = { id: ultimoID + 1, tarefa: tarefaAtual }
-      setTarefas([...tarefas, tarefa]);
       setUltimoID(ultimoID + 1);
+      setTarefas([...tarefas, tarefa]);
+      async function init() {
+        try {
+          await AsyncStorage.setItem('tarefas', JSON.stringify([...tarefas, tarefa]));
+          await AsyncStorage.setItem('@storage_Id', String(ultimoID));
+        } catch (error) {
+          alert('Erro: ' + error);
+        }
+      }
+      init();
       setTarefaAtual('');
     }
     else {
@@ -39,7 +82,7 @@ export default function App() {
       setModal(true);
     }
   }
-
+  console.log(ultimoID + ' - tarefas: ' + tarefas.length);
   return (
     <View style={{ ...styles.theme, flex: 1 }}>
       <ImageBackground source={image} style={styles.image} >
@@ -65,7 +108,6 @@ export default function App() {
               <TextInput
                 onChangeText={text => setTarefaAtual(text)}
                 style={styles.modalTextInput} autoFocus={true} placeholder='Digite a nova tarefa aqui' placeholderTextColor={'#ccc'}>
-
               </TextInput>
               <TouchableHighlight
                 style={{ ...styles.openButton, backgroundColor: '#29f' }}
@@ -86,7 +128,7 @@ export default function App() {
         {
           tarefas.map(function (val) {
             return (
-              <View style={styles.vTarefaSingle}>
+              <View style={styles.vTarefaSingle} key={val.id}>
                 <View style={{ flex: 1, width: '80%' }}>
                   <Text style={{ color: '#ddd', fontSize: 16 }}>
                     {val.tarefa}
@@ -104,12 +146,12 @@ export default function App() {
           })
         }
       </ScrollView>
-      <StatusBar style="auto" />
       <View style={styles.vAddTarefas}>
         <TouchableOpacity onPress={() => setModal(true)}>
           <AntDesign name="pluscircleo" size={48} color="#0a5" />
         </TouchableOpacity>
       </View>
+      <StatusBar style="auto" />
     </View>
   );
 }
