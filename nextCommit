@@ -1,0 +1,8 @@
+// first of all 
+git pull
+
+// commiting
+git add .
+git commit -m ":sparkles: feat()!: - some description of commit
+- more an optional description
+footer of description"
