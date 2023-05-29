@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, ImageBackground, TouchableOpacity, ScrollView } from 'react-native';
 import AppLoading from 'expo-app-loading';
@@ -7,12 +7,30 @@ import { AntDesign } from '@expo/vector-icons';
 
 export default function App() {
   const image = require('./resources/task.jpg');
+  const [tarefas, setTarefas] = useState([
+    {
+      id: 1,
+      tarefa: 'Levar o carro ao mecânico para consertar a porta.',
+    },
+    {
+      id: 2,
+      tarefa: 'Fazer as marmitas para levar para o trabalho.',
+    },
+    {
+      id: 3,
+      tarefa: 'Fazer bolo de mingal',
+    },
+  ]);
 
   let [fontsLoaded] = useFonts({
     Inter_900Black,
   });
   if (!fontsLoaded) {
     return null;
+  }
+
+  function deletarTarefa(id) {
+    alert('deletada a tarefa: ' + id);
   }
 
   return (
@@ -25,20 +43,27 @@ export default function App() {
         </View>
       </ImageBackground>
 
-
       <ScrollView>
-        <View style={styles.vTarefaSingle}>
-          <View style={{ flex: 1, width: '80%', paddingLeft: 24 }}>
-            <Text style={{ color: '#ddd', fontSize: 16 }}>
-              Acordar cedo dia 28 às 15h para correr
-            </Text>
-          </View>
-          <View style={{ alignItems: 'flex-end', flex: 1, paddingRight: 24 }}>
-            <TouchableOpacity>
-              <AntDesign name="minuscircleo" size={24} color="white" />
-            </TouchableOpacity>
-          </View>
-        </View>
+
+        {
+          tarefas.map(function (val) {
+            return (
+              <View style={styles.vTarefaSingle}>
+                <View style={{ flex: 1, width: '80%', paddingLeft: 24 }}>
+                  <Text style={{ color: '#ddd', fontSize: 16 }}>
+                    {val.tarefa}
+                  </Text>
+                </View>
+                <View style={{ alignItems: 'flex-end', flex: 1, paddingRight: 24 }}>
+                  <TouchableOpacity onPress={() => deletarTarefa(val.id)}>
+                    <AntDesign name="minuscircleo" size={24} color="white" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )
+          })
+        }
+
       </ScrollView>
       <StatusBar style="auto" />
     </View>
@@ -49,6 +74,7 @@ const styles = StyleSheet.create({
   theme: {
     backgroundColor: '#111',
   },
+
   image: {
     resizeMode: 'cover',
     width: '100%',
