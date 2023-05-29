@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ImageBackground, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, ImageBackground, TouchableOpacity, ScrollView, Modal, TouchableHighlight, TextInput } from 'react-native';
 import AppLoading from 'expo-app-loading';
 import { useFonts, Inter_900Black } from '@expo-google-fonts/inter';
 import { AntDesign } from '@expo/vector-icons';
@@ -21,6 +21,7 @@ export default function App() {
       tarefa: 'Fazer bolo de mingal',
     },
   ]);
+  const [modal, setModal] = useState(false);
 
   let [fontsLoaded] = useFonts({
     Inter_900Black,
@@ -30,7 +31,10 @@ export default function App() {
   }
 
   function deletarTarefa(id) {
-    alert('deletada a tarefa: ' + id);
+    let updatedTasks = tarefas.filter((val) => {
+      return val.id != id;
+    })
+    setTarefas(updatedTasks);
   }
 
   return (
@@ -42,9 +46,35 @@ export default function App() {
           </Text>
         </View>
       </ImageBackground>
-
       <ScrollView>
-
+        <Modal
+          animationType='slide'
+          transparent={true}
+          visible={modal}
+          onRequestClose={
+            () => {
+              Alert.alert("Modal has been closed.")
+            }
+          }
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <TextInput style={styles.modalTextInput} autoFocus={true} placeholder='Digite a nova tarefa aqui' placeholderTextColor={'#ccc'}></TextInput>
+              <TouchableHighlight
+                style={{ ...styles.openButton, backgroundColor: '#29f' }}
+                onPress={() => {
+                  setModal(!modal);
+                }}
+              >
+                <Text
+                  style={styles.textStyle}
+                >
+                  Adicionar Tarefa
+                </Text>
+              </TouchableHighlight>
+            </View>
+          </View>
+        </Modal>
         {
           tarefas.map(function (val) {
             return (
@@ -55,14 +85,21 @@ export default function App() {
                   </Text>
                 </View>
                 <View style={{ alignItems: 'flex-end', flex: 1, paddingRight: 24 }}>
-                  <TouchableOpacity onPress={() => deletarTarefa(val.id)}>
-                    <AntDesign name="minuscircleo" size={24} color="white" />
+                  <TouchableOpacity
+                    style={styles.btnAddTarefas}
+                    onPress={() => deletarTarefa(val.id)}
+                  >
+                    <AntDesign name="minuscircleo" size={24} color="#a22" />
                   </TouchableOpacity>
                 </View>
               </View>
             )
           })
         }
+
+        <TouchableOpacity onPress={() => setModal(true)}>
+          <AntDesign name="pluscircleo" size={48} color="#0a5" />
+        </TouchableOpacity>
 
       </ScrollView>
       <StatusBar style="auto" />
@@ -107,6 +144,52 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
     flexDirection: 'row',
     paddingBottom: 10,
+  },
 
-  }
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+
+  modalView: {
+    margin: 36,
+    backgroundColor: '#666',
+    borderRadius: 4,
+    padding: 48,
+    alignItems: 'center',
+    shadowColor: '#fff',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    zIndex: 5,
+    width: '90%',
+  },
+
+  textStyle: {
+    color: '#ddd',
+    padding: 12,
+    fontSize: 16,
+  },
+
+  openButton: {
+    borderRadius: 4,
+  },
+
+  modalTextInput: {
+    color: '#eee',
+    backgroundColor: '#333',
+    padding: 12,
+    marginBottom: 18,
+    width: '100%',
+  },
+
+  btnAddTarefas: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+  },
+
 })
